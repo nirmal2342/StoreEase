@@ -29,7 +29,7 @@ export const createProducts = async (req, res) => {
     });
 
     await newProduct.save();
-    res.status(201).json({ success: true, data: newProduct });
+    res.status(201).json({ success: true, product: newProduct }); // 👈 data -> product
   } catch (error) {
     console.log("Error in Create Product: ", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
@@ -50,7 +50,6 @@ export const updateProduct = async (req, res) => {
       ...req.body,
     };
 
-    // Agar update ke sath new image upload ho rahi hai
     if (req.file) {
       updateData.image = `/uploads/${req.file.filename}`;
     }
@@ -58,7 +57,8 @@ export const updateProduct = async (req, res) => {
     const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
       new: true,
     });
-    res.status(200).json({ success: true, data: updatedProduct });
+
+    res.status(200).json({ success: true, product: updatedProduct }); // 👈 data -> product
   } catch (error) {
     console.log("Error in updating products: ", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
