@@ -15,30 +15,43 @@ const CreatePage = () => {
   const [newProduct, setNewProduct] = useState({
     name: "",
     price: "",
-    image: "",
+    image: null, // change to file instead of string
   });
   const toast = useToast();
 
   const { createProduct } = useProductStore();
 
+  const handleFileChange = (e) => {
+    setNewProduct({ ...newProduct, image: e.target.files[0] });
+  };
+
   const handleAddProduct = async () => {
-    const { success, message } = await createProduct(newProduct);
-    if (!success) {
+    try {
+      // Use FormData to send file + text
+      const formData = new FormData();
+      formData.append("name", newProduct.name);
+      formData.append("price", newProduct.price);
+      formData.append("image", newProduct.image);
+
+      const { success, message } = await createProduct(formData, true);
+      // (true = telling store we’re sending FormData, adjust accordingly)
+
+      toast({
+        title: success ? "Success" : "Error",
+        description: message,
+        status: success ? "success" : "error",
+        isClosable: true,
+      });
+
+      setNewProduct({ name: "", price: "", image: null });
+    } catch (error) {
       toast({
         title: "Error",
-        description: message,
+        description: "Something went wrong",
         status: "error",
         isClosable: true,
       });
-    } else {
-      toast({
-        title: "Success",
-        description: message,
-        status: "success",
-        isClosable: true,
-      });
     }
-    setNewProduct({ name: "", price: "", image: "" });
   };
 
   return (
@@ -73,13 +86,13 @@ const CreatePage = () => {
                 setNewProduct({ ...newProduct, price: e.target.value })
               }
             />
+
+            {/* File input for image */}
             <Input
-              placeholder="Image URL"
+              type="file"
               name="image"
-              value={newProduct.image}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, image: e.target.value })
-              }
+              accept="image/*"
+              onChange={handleFileChange}
             />
 
             <Button colorScheme="blue" onClick={handleAddProduct} w="full">
